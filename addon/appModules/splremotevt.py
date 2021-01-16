@@ -5,6 +5,9 @@
 # Basic support for StationPlaylist Remote VT Client.
 # Borrows heavily from creator as the user interface is quite similar with changes specific to VT Client.
 
+from typing import Any
+# #155 (21.03): remove __future__ import when NVDA runs under Python 3.10.
+from __future__ import annotations
 import addonHandler
 import globalVars
 import ui
@@ -56,4 +59,4 @@ class AppModule(splcreator.AppModule):
 	# Playlist editor is same as Creator except it responds a bit faster.
 	# Without keeping a copy of status cache, NVDA will announce wrong values
 	# as Creator app module's cache will be used.
-	_playlistEditorStatusCache = {}
+	_playlistEditorStatusCache: dict[int, Any] = {}

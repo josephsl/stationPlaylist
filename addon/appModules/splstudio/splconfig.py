@@ -6,6 +6,9 @@
 # For UI surrounding this module, see splconfui module.
 # For the add-on settings specification, see splconfspec module.
 
+from typing import Optional
+# #155 (21.03): remove __future__ import when NVDA runs under Python 3.10.
+from __future__ import annotations
 import os
 import pickle
 from collections import ChainMap
@@ -28,7 +31,7 @@ from ..skipTranslation import translate
 # Configuration management
 SPLIni = os.path.join(globalVars.appArgs.configPath, "splstudio.ini")
 SPLProfiles = os.path.join(globalVars.appArgs.configPath, "addons", "stationPlaylist", "profiles")
-SPLConfig = None
+SPLConfig: Optional[ConfigHub] = None
 # The following settings can be changed in profiles:
 _mutatableSettings = ("IntroOutroAlarms", "MicrophoneAlarm", "MetadataStreaming", "ColumnAnnouncement")
 # 7.0: Profile-specific confspec (might be removed once a more optimal way to validate sections is found).
@@ -62,7 +65,7 @@ class ConfigHub(ChainMap):
 	The default value is None, which means Studio (splstudio.exe) app module opened this.
 	"""
 
-	def __init__(self, splComponent=None):
+	def __init__(self, splComponent: Optional[str] = None) -> None:
 		# Check SPL components to make sure malicious actors don't tamper with it.
 		if splComponent is None:
 			splComponent = "splstudio"
@@ -79,7 +82,7 @@ class ConfigHub(ChainMap):
 		if self.configInMemory:
 			self._normalProfileOnly = True
 		# For presentational purposes.
-		self.profileNames = []
+		self.profileNames: list[Optional[str]] = []
 		# 17.10: if config will be stored on RAM, this step is skipped, resulting in faster startup.
 		# But data conversion must take place.
 		if not self.configInMemory:
@@ -141,12 +144,11 @@ class ConfigHub(ChainMap):
 			except WindowsError:
 				pass
 		# Runtime flags (profiles and profile switching flag come from NVDA Core's ConfigManager).
-		self.profiles = self.maps
+		self.profiles: list[ConfigObj] = self.maps
+		self.instantSwitch: Optional[str] = None
 		# Active profile name is retrieved via the below property function.
 		if "InstantProfile" in self.profiles[0] and not self.normalProfileOnly:
 			self.instantSwitch = self.profiles[0]["InstantProfile"]
-		else:
-			self.instantSwitch = None
 		self.prevProfile = None
 		# A bit vector used to store profile switching flags.
 		self._switchProfileFlags = 0
@@ -154,7 +156,7 @@ class ConfigHub(ChainMap):
 		# Initially normal profile will sit in here.
 		self.switchHistory = [self.activeProfile]
 		# Record new profiles if any.
-		self.newProfiles = set()
+		self.newProfiles: set[str] = set()
 		# Reset flag (only engaged if reset did happen).
 		self.resetHappened = False
 		# #73: listen to config save/reset actions from NVDA Core.
@@ -163,7 +165,7 @@ class ConfigHub(ChainMap):
 
 	# Various properties
 	@property
-	def activeProfile(self):
+	def activeProfile(self) -> str:
 		return self.profiles[0].name
 
 	@property
@@ -678,13 +680,13 @@ _configErrors = {
 # To be run in app module constructor.
 # With the load function below, prepare config and other things upon request.
 # Prompt the config error dialog only once.
-_configLoadStatus = {}  # Key = filename, value is pass or no pass.
+_configLoadStatus: dict[str, str] = {}  # Key = filename, value is pass or no pass.
 # Track comments map.
 trackComments = {}
 
 
 # Open config database, used mostly from modules other than Studio.
-def openConfig(splComponent):
+def openConfig(splComponent: str) -> None:
 	global SPLConfig
 	# #64 (18.07): skip this step if another SPL component (such as Creator) opened this.
 	if SPLConfig is None:
@@ -693,7 +695,7 @@ def openConfig(splComponent):
 		SPLConfig.splComponents.add(splComponent)
 
 
-def initialize():
+def initialize() -> None:
 	global SPLConfig, _configLoadStatus, trackComments
 	# Load the default config from a list of profiles.
 	# 8.0: All this work will be performed when ConfigHub loads.
@@ -737,11 +739,11 @@ def initialize():
 # Cache a copy of the loaded config.
 # This comes in handy when saving configuration to disk. For the most part, no change occurs to config.
 # This helps prolong life of a solid-state drive (preventing unnecessary writes).
-_SPLCache = {}
+_SPLCache: Optional[dict[Optional[str], Any]] = {}
 
 
 # Close config database if needed.
-def closeConfig(splComponent):
+def closeConfig(splComponent: str) -> None:
 	global SPLConfig, _SPLCache
 	# #99 (19.06/18.09.9-LTS): if more than one instance of a given SPL component executable is running,
 	# do not remove the component from the components registry.
@@ -764,7 +766,7 @@ def closeConfig(splComponent):
 
 
 # Terminate the config and related subsystems.
-def terminate():
+def terminate() -> None:
 	global SPLConfig, _SPLCache
 	# Dump track comments.
 	with open(os.path.join(globalVars.appArgs.configPath, "spltrackcomments.pickle"), "wb") as f:
@@ -776,7 +778,7 @@ def terminate():
 
 
 # Called from within the app module.
-def instantProfileSwitch():
+def instantProfileSwitch() -> None:
 	# 17.10: What if only normal profile is in use?
 	if SPLConfig.normalProfileOnly:
 		# Translators: announced when only normal profile is in use.
@@ -885,7 +887,7 @@ Thank you.""")
 
 # And to open the above dialog and any other dialogs.
 # 18.09: return immediately after opening old ver dialog if minimal flag is set.
-def showStartupDialogs(oldVer=False):
+def showStartupDialogs(oldVer: bool = False) -> None:
 	# Old version reminder if this is such a case.
 	# 17.10: and also used to give people a chance to switch to LTS.
 	# 20.06: controlled by a temporary flag that can come and go.
@@ -903,7 +905,7 @@ def showStartupDialogs(oldVer=False):
 # This is a multimap, consisting of category, value and message.
 # Most of the categories are same as confspec keys,
 # hence the below message function is invoked when settings are changed.
-def message(category, value):
+def message(category: str, value: str) -> None:
 	verbosityLevels = ("beginner", "advanced")
 	ui.message(messagePool[category][value][verbosityLevels.index(SPLConfig["General"]["MessageVerbosity"])])
 

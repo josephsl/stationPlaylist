@@ -4,13 +4,16 @@
 # SPL Audio Processing Engine
 # Home to various DSP DLL's including encoders.
 
+from typing import Union
+# #155 (21.03): remove __future__ import when NVDA runs under Python 3.10.
+from __future__ import annotations
 import appModuleHandler
 import controlTypes
 from NVDAObjects.IAccessible import sysListView32
 
 # For SPL encoder config screen at least, control iD's are different,
 # which allows labels to be generated easily.
-encoderSettingsLabels = {
+encoderSettingsLabels: dict[int, Union[str, tuple[str, ...]]] = {
 	1008: "Quality",
 	1009: "Sample Rate",
 	1010: "Channels",
@@ -32,7 +35,7 @@ encoderSettingsLabels = {
 
 # #98: call the one from encoders module directly.
 # This is an indirect jump due to SPL Controller's encoder connection status  command.
-def announceEncoderConnectionStatus():
+def announceEncoderConnectionStatus() -> None:
 	from . import encoders
 	encoders.announceEncoderConnectionStatus()
 

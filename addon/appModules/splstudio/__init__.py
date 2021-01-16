@@ -12,6 +12,9 @@
 
 # Minimum version: SPL 5.30, NVDA 2020.3.
 
+from typing import Optional, Any, Union
+# #155 (21.03): remove __future__ import when NVDA runs under Python 3.10.
+from __future__ import annotations
 from functools import wraps
 import os
 import time
@@ -70,7 +73,7 @@ micAlarmT2 = None
 libScanT = None
 
 # Versions of Studio where library scanning functionality is broken.
-noLibScanMonitor = []
+noLibScanMonitor: list[str] = []
 
 
 # Braille and play a sound in response to an alarm or an event.
@@ -1539,7 +1542,7 @@ class AppModule(appModuleHandler.AppModule):
 	# Cart explorer
 	cartExplorer = False
 	# The carts dictionary (key = cart gesture, item = cart name).
-	carts = {}
+	carts: dict[str, Union[str, bool]] = {}
 
 	# Assigning and building carts.
 
@@ -2205,7 +2208,7 @@ class AppModule(appModuleHandler.AppModule):
 		SPLTemperature: [7, 0],  # Temperature for the current city.
 	}
 
-	_cachedStatusObjs = {}
+	_cachedStatusObjs: dict[int, Any] = {}
 
 	# Called in the layer commands themselves.
 	# 16.11: in Studio 5.20, it is possible to obtain some of these via the API, hence the API method is used.

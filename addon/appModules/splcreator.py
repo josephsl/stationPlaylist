@@ -4,6 +4,9 @@
 
 # Basic support for StationPlaylist Creator.
 
+from typing import Any
+# #155 (21.03): remove __future__ import when NVDA runs under Python 3.10.
+from __future__ import annotations
 import appModuleHandler
 import addonHandler
 import scriptHandler
@@ -17,7 +20,7 @@ addonHandler.initTranslation()
 
 # Return a tuple of column headers.
 # This is just a thinly disguised indexOf function from Studio's track item class.
-def indexOf(creatorVersion):
+def indexOf(creatorVersion: str) -> tuple[str, ...]:
 	# Nine columns per line for each tuple.
 	if creatorVersion >= "5.31":
 		return (
@@ -104,7 +107,7 @@ class AppModule(appModuleHandler.AppModule):
 	SPLEditorDateTime = 0
 	SPLEditorDuration = 1
 	SPLEditorStatusBar = 2
-	_playlistEditorStatusCache = {}
+	_playlistEditorStatusCache: dict[int, Any] = {}
 
 	@scriptHandler.script(gesture="kb:alt+NVDA+1")
 	def script_playlistDateTime(self, gesture):
