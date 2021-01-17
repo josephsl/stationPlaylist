@@ -2,9 +2,9 @@
 # Copyright 2015-2021 Joseph Lee, released under GPL.
 # Split from main global plugin in 2015, transferred to SPL Engine app module in 2020.
 
-from typing import Optional, Union
 # #155 (21.03): remove __future__ import when NVDA runs under Python 3.10.
 from __future__ import annotations
+from typing import Optional, Union
 import threading
 import time
 import os
@@ -367,17 +367,17 @@ class Encoder(IAccessible):
 	# Get the encoder identifier.
 	# This consists of two or three letter abbreviations for the encoder and the child ID.
 	@property
-	def encoderId(self):
+	def encoderId(self) -> str:
 		return f"{self.encoderType} {self.IAccessibleChildID}"
 
 	# Get and set encoder labels (hence encoder label is not really a property, although it may appear to be so).
 
 	@property
-	def encoderLabel(self):
+	def encoderLabel(self) -> Optional[str]:
 		return SPLEncoderLabels.get(self.encoderId, None)
 
 	@encoderLabel.setter
-	def encoderLabel(self, newEncoderLabel):
+	def encoderLabel(self, newEncoderLabel: str) -> None:
 		if not isinstance(newEncoderLabel, str):
 			raise TypeError("Encoder label must be a string")
 		if len(newEncoderLabel):
@@ -389,11 +389,11 @@ class Encoder(IAccessible):
 				pass
 
 	@property
-	def focusToStudio(self):
+	def focusToStudio(self) -> bool:
 		return self.encoderId in SPLFocusToStudio
 
 	@focusToStudio.setter
-	def focusToStudio(self, flag):
+	def focusToStudio(self, flag: bool):
 		if not isinstance(flag, bool):
 			raise TypeError("Flag must be a boolean")
 		if flag:
@@ -402,11 +402,11 @@ class Encoder(IAccessible):
 			SPLFocusToStudio.discard(self.encoderId)
 
 	@property
-	def playAfterConnecting(self):
+	def playAfterConnecting(self) -> bool:
 		return self.encoderId in SPLPlayAfterConnecting
 
 	@playAfterConnecting.setter
-	def playAfterConnecting(self, flag):
+	def playAfterConnecting(self, flag: bool):
 		if not isinstance(flag, bool):
 			raise TypeError("Flag must be a boolean")
 		if flag:
@@ -415,11 +415,11 @@ class Encoder(IAccessible):
 			SPLPlayAfterConnecting.discard(self.encoderId)
 
 	@property
-	def backgroundMonitor(self):
+	def backgroundMonitor(self) -> bool:
 		return self.encoderId in SPLBackgroundMonitor
 
 	@backgroundMonitor.setter
-	def backgroundMonitor(self, flag):
+	def backgroundMonitor(self, flag: bool) -> None:
 		if not isinstance(flag, bool):
 			raise TypeError("Flag must be a boolean")
 		if flag:
@@ -430,11 +430,11 @@ class Encoder(IAccessible):
 	# For the next two properties, setter should invert the flag.
 
 	@property
-	def connectionTone(self):
+	def connectionTone(self) -> bool:
 		return self.encoderId not in SPLNoConnectionTone
 
 	@connectionTone.setter
-	def connectionTone(self, flag):
+	def connectionTone(self, flag: bool) -> None:
 		if not isinstance(flag, bool):
 			raise TypeError("Flag must be a boolean")
 		if not flag:
@@ -443,11 +443,11 @@ class Encoder(IAccessible):
 			SPLNoConnectionTone.discard(self.encoderId)
 
 	@property
-	def announceStatusUntilConnected(self):
+	def announceStatusUntilConnected(self) -> bool:
 		return self.encoderId not in SPLConnectionStopOnError
 
 	@announceStatusUntilConnected.setter
-	def announceStatusUntilConnected(self, flag):
+	def announceStatusUntilConnected(self, flag: bool) -> None:
 		if not isinstance(flag, bool):
 			raise TypeError("Flag must be a boolean")
 		if not flag:
@@ -456,7 +456,7 @@ class Encoder(IAccessible):
 			SPLConnectionStopOnError.discard(self.encoderId)
 
 	# Format the status message to prepare for monitoring multiple encoders.
-	def encoderStatusMessage(self, message):
+	def encoderStatusMessage(self, message: str) -> None:
 		# #79 (18.10.1/18.09.3-lts): wxPython 4 is more strict about where timers can be invoked from.
 		# An exception will be logged if called from a thread other than the main one.
 		# This is especially the case with some speech synthesizers and/or braille displays.
@@ -474,7 +474,7 @@ class Encoder(IAccessible):
 
 	# Encoder connection reporter thread.
 	# By default background encoding (no manual connect) is assumed.
-	def connectStart(self, manualConnect=False):
+	def connectStart(self, manualConnect: bool=False) -> None:
 		# 20.09: don't bother if another thread is monitoring this encoder.
 		if self.encoderId in SPLBackgroundMonitorThreads and SPLBackgroundMonitorThreads[self.encoderId].is_alive():
 			return
@@ -486,12 +486,12 @@ class Encoder(IAccessible):
 
 	# #103: the abstract method that is responsible for announcing connection status.
 	@abstractmethod
-	def reportConnectionStatus(self, manualConnect=False):
+	def reportConnectionStatus(self, manualConnect: bool=False) -> None:
 		raise NotImplementedError
 
 	# Respond to encoders being connected.
 	# Almost identical to version 17.08 iteration except for being private.
-	def _onConnect(self):
+	def _onConnect(self) -> None:
 		# Do not proceed if already focused on Studio window.
 		if api.getFocusObject().appModule.appName == "splstudio":
 			return
@@ -689,14 +689,14 @@ class SAMEncoder(Encoder, sysListView32.ListItem):
 			row.setFocus()
 
 	@property
-	def encoderFormat(self):
+	def encoderFormat(self) -> str:
 		return self.getChild(1).name
 
 	@property
-	def connected(self):
+	def connected(self) -> bool:
 		return self._getColumnContentRaw(2) == "Encoding"
 
-	def reportConnectionStatus(self, manualConnect=False):
+	def reportConnectionStatus(self, manualConnect: bool=False) -> None:
 		# A fake child object holds crucial information about connection status.
 		# In order to not block NVDA commands, this will be done using a different thread.
 		attemptTime = time.time()
@@ -798,7 +798,7 @@ class SAMEncoder(Encoder, sysListView32.ListItem):
 	# through keyboard key press emulation (keyboard gesture send loop).
 	# Presses refer to how many times down arrow must be 'pressed' once context menu opens.
 
-	def _samContextMenu(self, presses):
+	def _samContextMenu(self, presses: int) -> None:
 		import itertools
 		keyboardHandler.KeyboardInputGesture.fromName("applications").send()
 		for key in itertools.repeat("downArrow", presses):
@@ -838,15 +838,15 @@ class SPLEncoder(Encoder):
 	encoderType = "SPL"
 
 	@property
-	def encoderFormat(self):
+	def encoderFormat(self) -> str:
 		return self.getChild(0).name
 
 	@property
-	def connected(self):
+	def connected(self) -> bool:
 		status = self._getColumnContentRaw(1)
 		return "Kbps" in status or "Connected" in status
 
-	def reportConnectionStatus(self, manualConnect=False):
+	def reportConnectionStatus(self, manualConnect: bool=False) -> None:
 		# Same routine as SAM encoder: use a thread to prevent blocking NVDA commands.
 		attemptTime = time.time()
 		messageCache = ""

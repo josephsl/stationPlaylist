@@ -12,9 +12,9 @@
 
 # Minimum version: SPL 5.30, NVDA 2020.3.
 
-from typing import Optional, Any, Union
 # #155 (21.03): remove __future__ import when NVDA runs under Python 3.10.
 from __future__ import annotations
+from typing import Optional, Any, Union
 from functools import wraps
 import os
 import time
@@ -68,9 +68,9 @@ def finally_(func, final):
 SPLMinVersion = "5.30"
 
 # Threads pool.
-micAlarmT = None
+micAlarmT: Optional[threading.Timer] = None
 micAlarmT2 = None
-libScanT = None
+libScanT: Optional[threading.Thread] = None
 
 # Versions of Studio where library scanning functionality is broken.
 noLibScanMonitor: list[str] = []
@@ -1378,7 +1378,7 @@ class AppModule(appModuleHandler.AppModule):
 	# 6.0: Split this routine into two functions, with the while loop moving to a function of its own.
 	# This new function will be used by track finder and place marker locator.
 	# 17.08: now it is a list that records search history.
-	findText = None
+	findText: Optional[list[str]] = None
 
 	def trackFinder(self, text, obj, directionForward=True, column=None):
 		speech.cancelSpeech()

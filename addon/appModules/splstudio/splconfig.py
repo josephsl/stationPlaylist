@@ -6,9 +6,9 @@
 # For UI surrounding this module, see splconfui module.
 # For the add-on settings specification, see splconfspec module.
 
-from typing import Optional
 # #155 (21.03): remove __future__ import when NVDA runs under Python 3.10.
 from __future__ import annotations
+from typing import Optional
 import os
 import pickle
 from collections import ChainMap
@@ -680,7 +680,7 @@ _configErrors = {
 # To be run in app module constructor.
 # With the load function below, prepare config and other things upon request.
 # Prompt the config error dialog only once.
-_configLoadStatus: dict[str, str] = {}  # Key = filename, value is pass or no pass.
+_configLoadStatus = {}  # Key = filename, value is pass or no pass.
 # Track comments map.
 trackComments = {}
 
@@ -739,7 +739,7 @@ def initialize() -> None:
 # Cache a copy of the loaded config.
 # This comes in handy when saving configuration to disk. For the most part, no change occurs to config.
 # This helps prolong life of a solid-state drive (preventing unnecessary writes).
-_SPLCache: Optional[dict[Optional[str], Any]] = {}
+_SPLCache = {}
 
 
 # Close config database if needed.
